@@ -14,3 +14,5 @@ RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://github.com/FelixMay/confettiRbasic
+BugReports: https://github.com/FelixMay/confettiRbasic/issues
