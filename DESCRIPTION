@@ -1,0 +1,16 @@
+Package: confettiRbasic
+Type: Package
+Title: Basic version of the spatial simulation model CONFETTI
+Version: 1.0.0
+Author: Felix May
+Maintainer: Felix May <felix.may@idiv.de>
+Description: CONFETTI is a spatially-explicit and dynamic model of plant
+    communities. This package allows to call a basic version of the model from R.
+LazyData: TRUE
+Imports:
+    Rcpp (>= 0.12.4)
+LinkingTo: Rcpp
+RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
