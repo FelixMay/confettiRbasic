@@ -93,5 +93,19 @@ public:
 };
 
 //---------------------------------------------------------------------------
+class CSpecPara
+{
+public:
+   double meanDisp; //mean dispersal distance
+
+   CSpecPara(){};
+
+   CSpecPara(double mDisp) : meanDisp{mDisp}
+   {};
+
+   ~CSpecPara(){};
+};
+
+//---------------------------------------------------------------------------
 #endif
 

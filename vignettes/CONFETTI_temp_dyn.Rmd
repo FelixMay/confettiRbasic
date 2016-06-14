@@ -1,0 +1,165 @@
+---
+title: "Temporal dynamics and species-specific output with CONFETTI"
+author: "Felix May"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    number_sections: yes
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, message = FALSE}
+library(confettiRbasic)
+library(ggplot2)
+library(cowplot)
+```
+
+The new version of `confettiRbasic` includes the possibility to get model output on temporal dynamics and output on species-specific trait values and species properties. This vignette first shows how to save and plot temporal output and second demonstrates how to assess species properties.
+
+# Simulations of biodiversity over time
+
+To get temporal output with `confetti.run()` you have to set the argument `nSteps.out` to values > 1. Then the simulation time specified by `nGen` (number of tree generations) will be divided in `nSteps.out` intervals and the summary statistics will be calculated for each of these time steps. Here we choose a scenario without negative density dependence.We simulate 1000 generations and save 50 steps, i.e. we get output after every 20 generations.
+
+```{r, echo = T, results = 'hide',  cache = T}
+library(confettiRbasic)
+
+pars1 <- c(metaSR = 100,
+           metaCV = 1.0,
+           m      = 0.0,
+           rmax   = 10,
+           aRec   = 0.005,
+           disp   = 50,
+           CNDD.m = 1.0,
+           CNDD.cv = 0.0)
+
+sim1 <- confetti.run(pars = pars1, nGen = 1000, nSteps.out = 50, nRep = 1)
+```
+
+You can explore the internal structure of the model output using `str()`. Then you will see that single valued summary statistics, i.e. species richness are vectors now, while summary statistics that wer vectors without temporal output, i.e. species-area relationships (SAR) are matrices now, where each row is one time step.
+
+```{r}
+str(sim1)
+```
+
+## Plotting the output
+
+### Species richness over time
+
+As output we get vectors for single value summary statistics, e.g. species richness and matrices for vector summary statistics, e.g. species abundances or spatial statistics. The time steps are stored in `generations`.
+
+First we plot species richness over time
+
+```{r, fig.width = 5, fig.height = 5}
+plot(sim1$summary.stats$nSpecies ~ sim1$generations,type="l",
+     xlab = "Time [in generations]",
+     ylab = "No. of species", las = 1)
+```
+As we do neither have immigration nor conspecific negative density dependence species richness decays over time.
+
+### Species abundances over time
+
+First, we create a vector with colors for each species and then we can use the function `matplot` to plot the whole abundance matrix at the same time. However, with many species this looks very messy.
+
+```{r, fig.width = 5, fig.height = 5}
+col.vec <- rainbow(nrow(sim1$species))
+matplot(x=sim1$generations, y = sim1$abundance, col = col.vec, type = "l", lty = 1)
+```
+
+You see that some species go extinct over time while others get more and more abundant.
+
+### Spatial patterns over time
+
+Plotting the spatial summary statistics involves some tweaking of the data to fit the format required by `ggplot()`. The main trick is to replicate each value as often as there are time steps. Here is how you do that for the species-area relationship.
+
+```{r, fig.width = 6, fig.height = 5}
+n.timesteps <- length(sim1$generations)
+SAR.dat <- data.frame(nSpec = as.numeric(sim1$summary.stats$SAR),
+                      Area_ha = rep(sim1$summary.stats$Area / 1e4, each = n.timesteps),
+                      Time = sim1$generations) 
+
+ggplot(data = SAR.dat,aes(x = Area_ha, y = nSpec, group = Time, col = Time)) +
+   geom_line() +
+   scale_colour_gradientn(colors=rainbow(5)) +
+   scale_x_log10() +
+   scale_y_log10()
+```
+
+The interesting point here is that species richness first declines at intermediate scales, around 1 hectar and only later at the largest scale of 25 ha, but in the end the SAR is flat again over this range.
+
+Once the principle is clear this can be easily done for the F(r) function, which estimates the probability of conspecific neighbours.
+
+```{r, fig.width = 6, fig.height = 5}
+Fr.dat <- data.frame(Fr = as.numeric(sim1$summary.stats$Fr),
+                     radius = rep(sim1$summary.stats$radius, each = n.timesteps),
+                     Time = sim1$generations) 
+
+ggplot(data = Fr.dat,aes(x = radius, y = Fr, group = Time, col = Time)) +
+   geom_line() +
+   scale_colour_gradientn(colors=rainbow(5)) 
+```
+
+You can see that at the start of the simulation (red line at the bottom) there is no pattern in the F(r) function (=proportion of conspecific neighbours). The over time you get high values at short distances due to local dispersal and species aggregation and at the same time the proportion of conspecifics increases over all distances, due to species loss and increasin dominance (see the abundance plot).
+
+# Species output
+
+In the updated version you get also output for each species whenever`nRep = 1`. In the data.frame species you get an ID, the relative abundances in the metacommunity, the mean dispersal distance and the conspecific negative density dependence. In the current simulation there is no difference in dispersal distance and CNDD among the species, so the values are all the same: 
+
+```{r}
+head(sim1$species)
+```
+
+## Correlation between abundance and CNDD
+
+Several empirical studies report a correlation between CNDD and species abundances in a way that rare species experience stronger CNDD, i.e. trees of rare species are more strongly suppressed by their conspecific neighbours.
+
+This relationship is not built into the model, but we would like to know if it emerges. Of 1 course for this purpose we need a scenario with `CNDD.m > 1` and `CNDD.cv > 0`. Furthermore we would like to avoid a scenario where the result is biased by a too short simulation time. Therefore we run first a simulation with output over time and check if the species diversity measures converged to an equilibrium:
+
+
+```{r, results = 'hide', cache = T}
+pars2 <- c(metaSR = 200,
+           metaCV = 1.0,
+           m      = 0.01,
+           rmax   = 10,
+           aRec   = 0.005,
+           disp   = 50,
+           CNDD.m = 10.0,
+           CNDD.cv = 0.5)
+
+sim2 <- confetti.run(pars = pars2, nGen = 1000, nSteps.out = 100, nRep = 1)
+```
+
+We plot the species richness, Shannon and Simpson diversity over time.
+
+```{r, fig.width = 8, fig.height = 3}
+par(mfrow=c(1,3), cex.lab = 1.5)
+plot(sim2$summary.stats$nSpecies ~ sim2$generations, type="l",
+     xlab = "Time [in generations]",
+     ylab = "No. of species", las = 1)
+
+plot(sim2$summary.stats$Shannon ~ sim2$generations,type="l",
+     xlab = "Time [in generations]",
+     ylab = "Shannon diversity", las = 1)
+
+plot(sim2$summary.stats$Simpson ~ sim2$generations,type="l",
+     xlab = "Time [in generations]",
+     ylab = "Simpson diversity", las = 1)
+```
+
+Obviously there is a strong decrease of diversity in the first 200 generations. Afterwards diversity is just fluctuating b, but not decreasing, so we assume that the system converted to a dynamic equilibrium state.
+
+Finally we are interested in the association between a species CNDD and its abundance. So let us plot this relationship. In the first step we extract the species abundances in the last time step and n the second one we simply plot this vs. species-specific CNDD.
+
+```{r, fig.width = 5, fig.height = 5}
+abund.final <- sim2$abundance[length(sim2$generations), ] 
+plot(sim2$species$CNDD ~ abund.final,log="x", xlab = "Species abundance", ylab = "Species specific CNDD")
+```
+
+We expect a negative relationship where rare species show high CNDD and abundant ones low CNDD. We see that the two most abundant species show very low CNDD, but below a certain threshold abundance there is no clear pattern at all.
+
+The interesting question is now, if a clear negative pattern emerges with different parameter settings. You could develop hypothesis under which scenarios this might happen and test this out with simulations.
+

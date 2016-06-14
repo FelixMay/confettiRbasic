@@ -6,7 +6,8 @@
 \usage{
 confetti.run(pars = c(metaSR = 300, metaCV = 1, m = 0.1, rmax = 10, aRec =
   0.005, disp = 30, CNDD.m = 1, CNDD.cv = 0), nRep = 1, nGen = 100,
-  nTrees = 10000, Xext = 500, Yext = 500, avg = FALSE)
+  nSteps.out = 1, nTrees = 10000, Xext = 500, Yext = 500,
+  dist.max = 100, avg = FALSE)
 }
 \arguments{
 \item{pars}{A vector of eight numbers that include the model parameters for CONFETTI. The vector can be named but need not. Note that the order of parameters matters.
@@ -26,20 +27,25 @@ confetti.run(pars = c(metaSR = 300, metaCV = 1, m = 0.1, rmax = 10, aRec =
 
 \item{nGen}{Number of generations simulated. This means the model is simulates nGen*nTrees birth-death events}
 
+\item{nSteps.out}{Number of time steps with model output. If nSteps.out == 1 there is only model output from the last simulated time step. If nSteps.out > 1 there is output over time. The output time itnerval is calculated as nGen/nSteps.out. The initial condition is included in the output. Temporal output works only on combination with avg = F.}
+
 \item{nTrees}{Number of trees in the local community}
 
 \item{Xext}{Size of the local community in x-direction}
 
 \item{Yext}{Size of the local community in y-direction}
 
-\item{avg}{logical variable: Should the model output be averaged over the replicate runs}
+\item{dist.max}{Maximum distance (in meters) over which the spatial patterns F(r) and PCF(r) are calculated. The step size is always 1 meter}
+
+\item{avg}{logical variable: Should the non-temporal model output be averaged over the replicate runs? This works only if nSteos.out == 1.}
 }
 \value{
-The model simulates virtual tree censuses with coordinates and species identities for each tree. The census data is only provided as output when nRep = 1 and avg = F. In this case the output is s list with three elements:
+The model simulates virtual tree censuses with coordinates and species identities for each tree. The census data of the last simulated time step is only provided as output when nRep = 1 and avg = F. In this case the output is a list with four elements:
 \enumerate{
    \item \bold{census} - a dataframe with x,y coordinates and species ID for every tree in the simulated community
-   \item \bold{abundance} - a names vector with the number of individuals for every species
-   \item \bold{summary.stats} a list with eigth elements that includes non-spatial and spatial summary statistics of the simulated community. The list elements are:
+   \item \bold{abundance} - a vector with the number of individuals for every species
+   \item \bold{species} - a dataframe with species properties: (1) the species ID, (2) the relative abundance in the metacommunity, (3) the mean dispersal distance, (4) the species-specifc conspecific negative density dependence (CNDD)
+   \item \bold{summary.stats} - a list with eigth elements that includes non-spatial and spatial summary statistics of the simulated community. When nSteps.out == 1 the summary statistics are provided as scalars and vectors and when nStpes.out > 1 as vectors and matrices. The list elements are:
 \enumerate{
    \item \bold{nSpecies} - Number of species
    \item \bold{Shannon} - Shannon diversity index \eqn{H = - \sum log(pi) * pi}

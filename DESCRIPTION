@@ -15,4 +15,4 @@ Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
 URL: https://github.com/FelixMay/confettiRbasic
-BugReports: https://github.com/FelixMay/confettiRbasic/issues
+BugReports: https://github.com/FelixMay/confettiRbasicdev/issues

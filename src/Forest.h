@@ -34,12 +34,13 @@ public:
 	int SpecMax;
 	std::vector<double> CumRelAbundMeta;
 
-	std::map<int,int> SpecAbund;     // map with first --> key, second --> abund
+	std::map<int,int> SpecAbund;       // map with first --> key, second --> abund
+	std::map<int,CSpecPara> SpecPars;  // species specific parameters
 
 	double **InteractMat;      //matrix with species-specific interaction coefficients
 
 	//Runtime
-	int64_t BD_max;
+	//int64_t BD_max;
 
 	//Grid
 	int XCells;
@@ -123,7 +124,7 @@ public:
 	void GetDiversity(int& nspec, double& shannon, double& simpson);
 	int GetSAD();
 	void GetSARq();
-	void OneRun(int isim, int irep);
+	//void OneRun(int isim, int irep);
 
 	std::string IntToString(int i)
 	{

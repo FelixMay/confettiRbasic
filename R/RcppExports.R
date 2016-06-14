@@ -3,7 +3,7 @@
 
 #' @useDynLib confettiRbasic
 #' @importFrom Rcpp sourceCpp
-EvalConfetti <- function(pars, ngen = 100L, ntrees = 10000L, xext = 500, yext = 500, rmax = 100, bw1 = 1.0) {
-    .Call('confettiRbasic_EvalConfetti', PACKAGE = 'confettiRbasic', pars, ngen, ntrees, xext, yext, rmax, bw1)
+EvalConfetti <- function(pars, ngen = 100L, nsteps_out = 1L, ntrees = 10000L, xext = 500, yext = 500, rmax = 100, bw1 = 1.0) {
+    .Call('confettiRbasic_EvalConfetti', PACKAGE = 'confettiRbasic', pars, ngen, nsteps_out, ntrees, xext, yext, rmax, bw1)
 }
 

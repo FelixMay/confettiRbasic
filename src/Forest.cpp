@@ -270,9 +270,16 @@ void CForest::initSpecies()
       for (unsigned int jspec = 0; jspec<SpecMax; jspec++)
          InteractMat[ispec][jspec] = 1.0;
 
-	for (unsigned int ispec=0; ispec<SpecMax; ++ispec){
 
-		//normal distribution
+	//init species traits
+	for (int ispec = 0; ispec < SpecMax; ++ispec){
+
+	   SpecAbund[ispec] = 0;
+
+	   //DISPERSAL PARAMETERS --------------------------------------------------
+	   SpecPars[ispec] = CSpecPara(pPars->disp_mean);
+
+		//CNDD - normal distribution
 		CNDD_spec = RandGen2->Normal(pPars->m_CNDDspec,pPars->sd_CNDDspec);
 		if (CNDD_spec < 1.0) //exclude positive density dependence
          CNDD_spec = 1.0;
@@ -429,8 +436,6 @@ void CForest::GetNewXY(double &x1, double &y1, int idspec) {
 	double x0 = x1;
 	double y0 = y1;
 
-	double r_dist{0.0};
-
 	if (pPars->disp_mean < 999.0) {
 
 		//log-normal dispersal kernel
@@ -479,7 +484,7 @@ bool CForest::BirthDeathAsync() {
 		RemoveTree(pTree);
 
 		if (SpecAbund[pTree->SpecID] > 0) --SpecAbund[pTree->SpecID];
-		if (SpecAbund[pTree->SpecID] == 0)  SpecAbund.erase(pTree->SpecID);
+		//if (SpecAbund[pTree->SpecID] == 0)  SpecAbund.erase(pTree->SpecID);
 
 		// recruitment and speciation
       recruit = false;
@@ -539,39 +544,40 @@ bool CForest::BirthDeathAsync() {
 	return(stop);
 }
 
-// ---------------------------------------------------------------------------
-void CForest::OneRun(int isim, int irep)
-{
-	BD_max = pSettings->m_nGen * TreeList.size();
-
-	bool stoprun = false;
-
-   int nspec = SpecAbund.size();
-
-   	while (BD_total < BD_max && nspec > 1) {
-
-		for (int i = 0; i < NTrees; ++i) {
-			stoprun = BirthDeathAsync();
-			if (stoprun == true) break;
-		}
-
-      nspec = SpecAbund.size();
-		if (stoprun == true) break;
-
-	}  // while BD_total < BD_max
-}
+// // ---------------------------------------------------------------------------
+// void CForest::OneRun(int isim, int irep)
+// {
+// 	BD_max = pSettings->m_nGen * TreeList.size();
+//
+// 	bool stoprun = false;
+//
+//    int nspec = SpecAbund.size();
+//
+//    	while (BD_total < BD_max && nspec > 1) {
+//
+// 		for (int i = 0; i < NTrees; ++i) {
+// 			stoprun = BirthDeathAsync();
+// 			if (stoprun == true) break;
+// 		}
+//
+//       nspec = SpecAbund.size();
+// 		if (stoprun == true) break;
+//
+// 	}  // while BD_total < BD_max
+// }
 
 // ---------------------------------------------------------------------------
 void CForest::GetDiversity(int& nspec, double& shannon, double& simpson) {
 
 	double relabund{0.0};
 
-   nspec = SpecAbund.size();
+   nspec = 0;
    shannon = 0.0;
    simpson = 0.0;
 
 	for (spec_it = SpecAbund.begin(); spec_it != SpecAbund.end(); ++spec_it) {
 		if (spec_it->second > 0) {
+			++nspec;
 			relabund = static_cast<double>(spec_it->second) / NTrees;
 			shannon += log(relabund) * relabund;
 			simpson += relabund * relabund;
@@ -761,7 +767,7 @@ void CForest::GetPPA() {
 		PCF_all[ibin1] = 0.0;
 	}
 
-	int ibin1, ibin2;
+	int ibin1;
 	int iX2, iY2;
 	int Xcells2 = Xmax / pSettings->m_cellSize;
 	int Ycells2 = Ymax / pSettings->m_cellSize;

@@ -14,16 +14,19 @@
 #' }
 #' @param nRep Number of replicate runs with the same parameter set
 #' @param nGen Number of generations simulated. This means the model is simulates nGen*nTrees birth-death events
+#' @param nSteps.out Number of time steps with model output. If nSteps.out == 1 there is only model output from the last simulated time step. If nSteps.out > 1 there is output over time. The output time itnerval is calculated as nGen/nSteps.out. The initial condition is included in the output. Temporal output works only on combination with avg = F.
 #' @param nTrees Number of trees in the local community
 #' @param Xext Size of the local community in x-direction
 #' @param Yext Size of the local community in y-direction
-#' @param avg logical variable: Should the model output be averaged over the replicate runs
+#' @param dist.max Maximum distance (in meters) over which the spatial patterns F(r) and PCF(r) are calculated. The step size is always 1 meter
+#' @param avg logical variable: Should the non-temporal model output be averaged over the replicate runs? This works only if nSteos.out == 1.
 #'
-#' @return The model simulates virtual tree censuses with coordinates and species identities for each tree. The census data is only provided as output when nRep = 1 and avg = F. In this case the output is s list with three elements:
+#' @return The model simulates virtual tree censuses with coordinates and species identities for each tree. The census data of the last simulated time step is only provided as output when nRep = 1 and avg = F. In this case the output is a list with four elements:
 #' \enumerate{
 #'    \item \bold{census} - a dataframe with x,y coordinates and species ID for every tree in the simulated community
-#'    \item \bold{abundance} - a names vector with the number of individuals for every species
-#'    \item \bold{summary.stats} a list with eigth elements that includes non-spatial and spatial summary statistics of the simulated community. The list elements are:
+#'    \item \bold{abundance} - a vector with the number of individuals for every species
+#'    \item \bold{species} - a dataframe with species properties: (1) the species ID, (2) the relative abundance in the metacommunity, (3) the mean dispersal distance, (4) the species-specifc conspecific negative density dependence (CNDD)
+#'    \item \bold{summary.stats} - a list with eigth elements that includes non-spatial and spatial summary statistics of the simulated community. When nSteps.out == 1 the summary statistics are provided as scalars and vectors and when nStpes.out > 1 as vectors and matrices. The list elements are:
 #' \enumerate{
 #'    \item \bold{nSpecies} - Number of species
 #'    \item \bold{Shannon} - Shannon diversity index \eqn{H = - \sum log(pi) * pi}
@@ -67,11 +70,24 @@ confetti.run <- function(pars = c(metaSR = 300,
                                   CNDD.cv = 0.0),
                          nRep = 1,
                          nGen = 100,
+                         nSteps.out = 1,
                          nTrees = 10000,
                          Xext = 500,
                          Yext = 500,
-                         avg = FALSE)
+                         dist.max = 100,
+                         avg = FALSE
+                         )
 {
+   if (nRep > 1 & nSteps.out > 1){
+      print("Warning: temporal output is ignored if nRep > 1. Either use nRep = 1 or nSteps.out = 1")
+      nSteps.out <- 1
+   }
+
+   if (nRep == 1 & avg == TRUE){
+      print("Warning: When nRep = 1, avg is set to FALSE")
+      avg <- FALSE
+   }
+
    # create matrix with replicate parameter sets
    pars <- as.numeric(pars)
    pars.mat <- matrix(rep(pars,times=nRep), ncol=length(pars), byrow=T)
@@ -79,9 +95,11 @@ confetti.run <- function(pars = c(metaSR = 300,
    # apply the model to each line of the model output
    out1 <- apply(pars.mat, MARGIN=1, FUN=EvalConfetti,
                  ngen = nGen,
+                 nsteps_out = nSteps.out,
                  ntrees = nTrees,
                  xext = Xext,
-                 yext = Yext)
+                 yext = Yext,
+                 rmax = dist.max)
 
    # extract the output
    nSpecies <- as.numeric(unlist(sapply(out1,"[","nSpecies")))
@@ -94,11 +112,19 @@ confetti.run <- function(pars = c(metaSR = 300,
    PCF.list <- sapply(out1,"[","PCF")
 
    Area_m2  <- out1[[1]]$Area_m2
+   radius   <- out1[[1]]$radius
 
-   SAD      <- matrix(unlist(SAD.list),ncol=length(SAD.list[[1]]),byrow=T)
-   SAR      <- matrix(unlist(SAR.list),ncol=length(SAR.list[[1]]),byrow=T)
-   Fr       <- matrix(unlist(Fr.list),ncol=length(PCF.list[[1]]),byrow=T)
-   PCF      <- matrix(unlist(PCF.list),ncol=length(PCF.list[[1]]),byrow=T)
+   if (nSteps.out == 1) {
+      SAD      <- matrix(unlist(SAD.list), ncol=length(SAD.list[[1]]), byrow=T)
+      SAR      <- matrix(unlist(SAR.list), ncol=length(SAR.list[[1]]), byrow=T)
+      Fr       <- matrix(unlist(Fr.list), ncol=length(PCF.list[[1]]), byrow=T)
+      PCF      <- matrix(unlist(PCF.list), ncol=length(PCF.list[[1]]), byrow=T)
+   } else {
+      SAD      <- SAD.list[[1]]
+      SAR      <- SAR.list[[1]]
+      Fr       <- Fr.list[[1]]
+      PCF      <- PCF.list[[1]]
+   }
 
    summary.stats <- list()
 
@@ -110,6 +136,7 @@ confetti.run <- function(pars = c(metaSR = 300,
       summary.stats$SAD <- colMeans(SAD)
       summary.stats$Area <- Area_m2
       summary.stats$SAR <- colMeans(SAR)
+      summary.stats$radius <- radius
       summary.stats$Fr <- colMeans(Fr)
       summary.stats$PCF <- colMeans(PCF)
 
@@ -117,19 +144,24 @@ confetti.run <- function(pars = c(metaSR = 300,
 
    } else {
       if (nRep == 1){
-         census <- data.frame(X = out1[[1]]$X,
-                              Y = out1[[1]]$Y,
-                              SpecID = factor(out1[[1]]$SpecID))
-         abundance <- table(out1[[1]]$SpecID)
+         census <- out1[[1]]$Trees
+         abundance <- out1[[1]]$Abundance
+         species <- out1[[1]]$Species
+         generations <- out1[[1]]$Generations
       }
       summary.stats$nSpecies <- nSpecies
       summary.stats$Shannon <- Shannon
-      summary.stats$Shannon <- Simpson
+      summary.stats$Simpson <- Simpson
       summary.stats$SAD <- SAD
       summary.stats$Area <- Area_m2
       summary.stats$SAR <- SAR
+      summary.stats$radius <- radius
       summary.stats$Fr <- Fr
       summary.stats$PCF <- PCF
-      return(list(census = census, abundance = abundance, summary.stats = summary.stats))
+      return(list(census = census,
+                  abundance = abundance,
+                  species = species,
+                  generations = generations,
+                  summary.stats = summary.stats))
    }
 }
