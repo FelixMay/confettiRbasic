@@ -9,29 +9,49 @@ using namespace Rcpp;
 //' @importFrom Rcpp sourceCpp
 // [[Rcpp::export]]
 List EvalConfetti(NumericVector pars,
-                  int ngen = 100,
+                  int ngen       = 100,
                   int nsteps_out = 1,
-                  int ntrees = 10000,
-                  double xext = 500,
-                  double yext = 500,
-                  double rmax = 100,
-                  double bw1 = 1.0
+                  int ntrees     = 10000,
+                  double xext    = 500,
+                  double yext    = 500,
+                  double rmax    = 100,
+                  double bw1     = 1.0,
+                  int metaSAD    = 0
                   )
 {
 	CModelSettings* pSettings = new CModelSettings(ngen,
                                                   false,
                                                   5,
                                                   ntrees*100,
+                                                  metaSAD,
                                                   ntrees,
                                                   xext,
                                                   yext,
                                                   rmax,
                                                   bw1
                                                   );
-
-	CPara* pPara = new CPara(pars[0], pars[1], pars[2],
-                            pars[3], pars[4], pars[5],
-                            pars[6], pars[7]
+	CPara* pPara = new CPara(pars[0],
+                            pars[1],
+                            pars[2],
+                            pars[3],
+                            pars[4],
+                            pars[5],
+                            pars[6],
+                            pars[7],
+                            pars[8],
+                            pars[9],
+                            pars[10],
+                            pars[11],
+                            pars[12],
+                            pars[13],
+                            pars[14],
+                            pars[15],
+                            pars[16],
+                            pars[17],
+                            pars[18],
+                            pars[19],
+                            pars[20],
+                            pars[21]
                             );
 
 	int seed = as<int>(runif(1,0,999999));
@@ -85,7 +105,7 @@ List EvalConfetti(NumericVector pars,
       Shannon[0] = shannon;
       Simpson[0] = 1.0 - simpson;
 
-      for (int ispec = 0; ispec < pForest->SpecAbund.size(); ++ispec)
+      for (unsigned int ispec = 0; ispec < pForest->SpecAbund.size(); ++ispec)
          Abundance(0,ispec) = pForest->SpecAbund[ispec];
 
       pForest->GetSAD();
@@ -112,10 +132,15 @@ List EvalConfetti(NumericVector pars,
 
       for (int i = 0; i < ntrees; ++i) {
          stoprun = pForest->BirthDeathAsync();
-         if (stoprun == true) break;
+         if (stoprun == true){
+            Rcout<<"STOP"<<std::endl;
+            break;
+         }
       }
 
-      if (stoprun == true) break;
+      if (stoprun == true){
+         break;
+      }
 
       ++istep;
 
@@ -136,7 +161,7 @@ List EvalConfetti(NumericVector pars,
          Shannon[iout] = shannon;
          Simpson[iout] = 1.0 - simpson;
 
-         for (int ispec = 0; ispec < pForest->SpecAbund.size(); ++ispec)
+         for (unsigned int ispec = 0; ispec < pForest->SpecAbund.size(); ++ispec)
             Abundance(iout,ispec) = pForest->SpecAbund[ispec];
 
          pForest->GetSAD();
@@ -170,7 +195,7 @@ List EvalConfetti(NumericVector pars,
    NumericVector metaRelAbund(pForest->SpecMax);
    NumericVector mDisp(pForest->SpecMax);
    NumericVector CNDD(pForest->SpecMax);
-   NumericVector localAbund(pForest->SpecMax);
+   NumericVector pRec(pForest->SpecMax);
 
    for (int ispec = 0; ispec < pForest->SpecMax; ++ispec){
 
@@ -181,6 +206,7 @@ List EvalConfetti(NumericVector pars,
 
       mDisp[ispec] = pForest->SpecPars[ispec].meanDisp;
       CNDD[ispec]  = pForest->InteractMat[ispec][ispec];
+      pRec[ispec]  = pForest->SpecPars[ispec].probRec;
    }
 
    pForest->clearSpecies();
@@ -197,7 +223,8 @@ List EvalConfetti(NumericVector pars,
    DataFrame species = DataFrame::create(_["speciesID"] = speciesID,
                                          _["metaRelAbund"] = metaRelAbund,
                                          _["meanDisp"] = mDisp,
-                                         _["CNDD"] = CNDD
+                                         _["CNDD"] = CNDD,
+                                         _["pRec"] = pRec
                                          );
 
    List output = List::create(_["Generations"] = Time,
@@ -214,7 +241,6 @@ List EvalConfetti(NumericVector pars,
                               _["Species"]   = species,
                               _["Trees"]     = trees
                               );
-
    return(output);
 }
 

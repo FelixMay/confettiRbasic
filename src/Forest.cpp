@@ -129,7 +129,7 @@ void CForest::clearTrees()
 // ---------------------------------------------------------------------------
 void CForest::clearSpecies()
 {
-	for (unsigned int ispec = 0; ispec < SpecMax; ispec++)
+	for (int ispec = 0; ispec < SpecMax; ++ispec)
 		delete[] InteractMat[ispec];
    delete[] InteractMat;
 
@@ -254,36 +254,103 @@ void CForest::initSpecies()
 	// Init metacommunity if not read from file
 	CumRelAbundMeta.clear();
 
-   CumRelAbundMeta = LognormSAD(pPars->metaSR,pSettings->m_Jm,pPars->metaCV);
+   switch (pSettings->m_metaSAD) {
+   case 0:
+      CumRelAbundMeta = UniformSAD(pPars->metaSR);
+      break;
+   case 1:
+      CumRelAbundMeta = LognormSAD(pPars->metaSR, pSettings->m_Jm, pPars->metaCV);
+      break;
+   default:
+      CumRelAbundMeta = UniformSAD(pPars->metaSR);
+   }
 
 	SpecMax = CumRelAbundMeta.size();
 
-	double CNDD_spec{0};
+	double disp_spec{0.0}, CNDD_spec{0.0}, pRec_spec{0.0}, meta_relabund{0};
+
+	//Log-normal distribution for mean dispersal distance
+	double disp_sigma = sqrt(log(1.0 + (pPars->disp_sd*pPars->disp_sd)/
+                                      (pPars->disp_mean*pPars->disp_mean)));
+	double disp_mu = log(pPars->disp_mean) - 0.5 * disp_sigma*disp_sigma;
+
 
 	//Construct species interaction matrix
 	InteractMat = new double*[SpecMax];
-   for (unsigned int ispec = 0; ispec < SpecMax; ispec++)
+   for (int ispec = 0; ispec < SpecMax; ++ispec)
       InteractMat[ispec] = new double[SpecMax];
 
    //Initialize interaction matrix with reference value for all values
-   for (unsigned int ispec=0; ispec<SpecMax; ispec++)
-      for (unsigned int jspec = 0; jspec<SpecMax; jspec++)
+   for (int ispec = 0; ispec < SpecMax; ++ispec)
+      for (int jspec = 0; jspec < SpecMax; ++jspec)
          InteractMat[ispec][jspec] = 1.0;
-
 
 	//init species traits
 	for (int ispec = 0; ispec < SpecMax; ++ispec){
 
 	   SpecAbund[ispec] = 0;
 
-	   //DISPERSAL PARAMETERS --------------------------------------------------
-	   SpecPars[ispec] = CSpecPara(pPars->disp_mean);
+		//1. Recruitment probability
+		pRec_spec = RandGen2->Normal(pPars->pRec_mean,pPars->pRec_sd);
+		if (pRec_spec < 0.001)
+		   pRec_spec = 0.001;
+		if (pRec_spec > 1.0)
+		   pRec_spec = 1.0;
 
-		//CNDD - normal distribution
-		CNDD_spec = RandGen2->Normal(pPars->m_CNDDspec,pPars->sd_CNDDspec);
+		//2. CNDD - conspecific negative density dependence
+
+		//trade-off with recruitment rate
+		switch (pPars->trade1_CNDD_pRec) {
+   		case 0: //CNDD - normal distribution
+   		   CNDD_spec = RandGen2->Normal(pPars->CNDD_mean,pPars->CNDD_sd);
+   		   break;
+   		case 1: //linear relationship with pRec
+   		   CNDD_spec = pPars->a_CNDD_pRec + pPars->b_CNDD_pRec * pRec_spec;
+   		   break;
+   		case 2:
+   		   CNDD_spec = pPars->a_CNDD_pRec + pPars->b_CNDD_pRec * exp(pPars->c_CNDD_pRec * pRec_spec);
+   		   break;
+   		default:
+   		   CNDD_spec = RandGen2->Normal(pPars->CNDD_mean,pPars->CNDD_sd);
+		}
+
+		if (ispec == 0) meta_relabund = CumRelAbundMeta[0];
+		else            meta_relabund = CumRelAbundMeta[ispec] - CumRelAbundMeta[ispec-1];
+
+		//trade-off with metacommunity abundance
+		switch (pPars->trade2_CNDD_abund) {
+   		case 1:
+   		   CNDD_spec = pPars->a_CNDD_abund + pPars->b_CNDD_abund * log(meta_relabund);
+   		   break;
+   		case 2:
+            CNDD_spec = pPars->a_CNDD_abund + pPars->b_CNDD_abund * meta_relabund;
+   		   break;
+		   default:
+		      ;
+		}
+
 		if (CNDD_spec < 1.0) //exclude positive density dependence
-         CNDD_spec = 1.0;
+		   CNDD_spec = 1.0;
 		InteractMat[ispec][ispec] = CNDD_spec;
+
+		//3. Dispersal
+
+		//trade-off with recruitment rate
+		switch (pPars->trade3_disp_pRec) {
+		case 0: //CNDD - lognormal distribution
+		   disp_spec = exp(RandGen2->Normal(disp_mu, disp_sigma));
+		   break;
+		case 1: //linear relationship with pRec
+		   disp_spec = pPars->a_disp_pRec + pPars->b_disp_pRec * pRec_spec;
+		   break;
+		case 2:
+		   disp_spec = pPars->a_disp_pRec + pPars->b_disp_pRec * exp(pPars->c_disp_pRec * pRec_spec);
+		   break;
+		default:
+		   disp_spec = exp(RandGen2->Normal(disp_mu, disp_sigma));
+		}
+
+		SpecPars[ispec] = CSpecPara(disp_spec, pRec_spec);
 	}
 
 	// Init immigration rate
@@ -292,7 +359,6 @@ void CForest::initSpecies()
 	else
 		m = pPars->m;
 }
-
 
 // ---------------------------------------------------------------------------
 void CForest::initTrees()
@@ -398,10 +464,14 @@ double CForest::GetProbRecruit(double x1, double y1, unsigned int spec_id)
       densNCI = NCI/(pPars->r_max * pPars->r_max * Pi);
 	} //if rmax < 99
 
-	double prob_rec1;
-	if (NCI == 0)
-	   prob_rec1 = 1.0;
-	else prob_rec1 = 1.0 - densNCI/(pPars->aRec + densNCI);
+	// double prob_rec1{0.0};
+	// if (NCI == 0)
+	//    prob_rec1 = 1.0;
+	// else prob_rec1 = (1.0 - densNCI/(pPars->aRec + densNCI));
+
+	//Rcout<<SpecPars[spec_id].probRec<<std::endl;
+
+	double prob_rec1 = (1.0 - densNCI/(pPars->aRec + densNCI)) * SpecPars[spec_id].probRec;
 
 	return(prob_rec1);
 }
@@ -493,9 +563,10 @@ bool CForest::BirthDeathAsync() {
 
 		// immigration from metacommunity pool
       if (RandGen1->Random() < m) {
-         ID_Spec = GetRandSpec();
 
          do {
+            ID_Spec = GetRandSpec();
+
             xnew = RandGen1->Random() * Xmax; // random coordinates
             ynew = RandGen1->Random() * Ymax;
 

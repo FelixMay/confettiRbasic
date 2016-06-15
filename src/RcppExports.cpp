@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // EvalConfetti
-List EvalConfetti(NumericVector pars, int ngen, int nsteps_out, int ntrees, double xext, double yext, double rmax, double bw1);
-RcppExport SEXP confettiRbasic_EvalConfetti(SEXP parsSEXP, SEXP ngenSEXP, SEXP nsteps_outSEXP, SEXP ntreesSEXP, SEXP xextSEXP, SEXP yextSEXP, SEXP rmaxSEXP, SEXP bw1SEXP) {
+List EvalConfetti(NumericVector pars, int ngen, int nsteps_out, int ntrees, double xext, double yext, double rmax, double bw1, int metaSAD);
+RcppExport SEXP confettiRbasic_EvalConfetti(SEXP parsSEXP, SEXP ngenSEXP, SEXP nsteps_outSEXP, SEXP ntreesSEXP, SEXP xextSEXP, SEXP yextSEXP, SEXP rmaxSEXP, SEXP bw1SEXP, SEXP metaSADSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -19,7 +19,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type yext(yextSEXP);
     Rcpp::traits::input_parameter< double >::type rmax(rmaxSEXP);
     Rcpp::traits::input_parameter< double >::type bw1(bw1SEXP);
-    __result = Rcpp::wrap(EvalConfetti(pars, ngen, nsteps_out, ntrees, xext, yext, rmax, bw1));
+    Rcpp::traits::input_parameter< int >::type metaSAD(metaSADSEXP);
+    __result = Rcpp::wrap(EvalConfetti(pars, ngen, nsteps_out, ntrees, xext, yext, rmax, bw1, metaSAD));
     return __result;
 END_RCPP
 }
