@@ -36,7 +36,7 @@ head(census1)
 Create a vector with colors for each species
 
 ```{r}
-col.vec <- rainbow(out1$summary.stats$nSpecies)
+col.vec <- rainbow(out1$nSpecies)
 ```
 
 Plot the position of all trees with colors marks that indicates the species identity
@@ -58,30 +58,26 @@ We start with exploring the influence of the species richness of the metacommuni
 First we create a dataframe with parameter sets. This can be done efficiently using the `expand.grid()` function
 
 ```{r}
-parsets <- expand.grid(metaSR = c(50,100,200,500,1000),
-                       metaCV = 1.0,
-                       m      = 0.1,
-                       rmax   = 10,
-                       aRec   = 0.005,
-                       disp   = 30,
-                       CNDD.m = 1.0,
-                       CNDD.cv = 0.0)
+parsets <- expand.grid(metaSR = c(50,100,200,500,1000) ,
+                       metaCV = 1.0 
+                       )
 parsets
 ```
 Now we call the CONFETTI model for each line in the parameter dataframe. For each parameter set 5 replicate runs are simulated by `nRep = 5` and the summary statistics are automatically averaged over the replicates by `avg = T`. The simluted community is 250 m x 250 m and contains 2500 trees.
 
-```{r}
-sim1 <- confetti.run(pars = parsets[1,], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
-sim2 <- confetti.run(pars = parsets[2,], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
-sim3 <- confetti.run(pars = parsets[3,], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
-sim4 <- confetti.run(pars = parsets[4,], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
-sim5 <- confetti.run(pars = parsets[5,], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
+```{r, results='hide'}
+sim1 <- confetti.run(pars = parsets[1,,drop=F], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
+sim2 <- confetti.run(pars = parsets[2,,drop=F], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
+sim3 <- confetti.run(pars = parsets[3,,drop=F], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
+sim4 <- confetti.run(pars = parsets[4,,drop=F], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
+sim5 <- confetti.run(pars = parsets[5,,drop=F], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = F)
 ```
 
 The same simulation set can be done more efficiently using the `apply` function on the rows of the parameter dataframe
 
-```{r}
-sim.list <- apply(parsets, MARGIN = 1, FUN = confetti.run, nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
+```{r, results='hide'}
+sim.list <- apply(parsets, MARGIN = 1, FUN = confetti.run, nTrees = 2500, Xext = 250, Yext = 250, 
+                  nRep = 5, avg = T)
 ```
 
 ### Scalar diversity indices
@@ -171,18 +167,13 @@ As a second example we keep the metacommunit diversity constant, but vary the me
 
 ```{r}
 parsets2 <- expand.grid(metaSR = 200,
-                       metaCV = 1.0,
-                       m      = 0.1,
-                       rmax   = 10,
-                       aRec   = 0.005,
-                       disp   = c(10,20,30,40,50),
-                       CNDD.m = 1.0,
-                       CNDD.cv = 0.0)
+                        disp.m   = c(10,20,30,40,50) 
+                        )
 ```
 
 Then we simulate CONFETTI for each row of the parameter set with the same settings than above.
 
-```{r}
+```{r, results='hide'}
 sim.list2 <- apply(parsets2, MARGIN = 1, FUN = confetti.run, nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T )
 ```
 
@@ -194,8 +185,8 @@ Now we directly start exploring the spatial patterns and first plot the proporti
 Fr <- sapply(sim.list2,"[[","Fr")      # extract summary statistic
 Fr.length <- length(sim.list2[[1]]$Fr)
 Fr.dat <- data.frame(Fr = as.numeric(Fr),
-                     r = 1:100,
-                     disp = rep(parsets2$disp, each = Fr.length)
+                     r = sim.list2[[1]]$radius,
+                     disp = rep(parsets2$disp.m, each = Fr.length)
 )
 
 summary(Fr.dat)
@@ -215,8 +206,8 @@ Finally we check out the species-area relationship (SAR). Luckily the different 
 SAR <- sapply(sim.list2,"[[","SAR")      # extract summary statistic
 SAR.length <- length(sim.list2[[1]]$SAR)
 SAR.dat <- data.frame(nSpec = as.numeric(SAR),
-                      Area_ha = sim.list2[[1]]$Area / 1e4,
-                      disp = rep(parsets2$disp, each = SAR.length)
+                      Area_ha = sim.list2[[1]]$Area_m2 / 1e4,
+                      disp = rep(parsets2$disp.m, each = SAR.length)
 )
 
 summary(SAR.dat)
@@ -252,18 +243,17 @@ Finally we look at example census data with short and long dispersal to get a be
 parsets3 <- data.frame(metaSR = 20,
                        metaCV = 1.0,
                        m      = 0.1,
-                       rmax   = 10,
+                       rmax   = 0,
                        aRec   = 0.005,
-                       disp   = c(10,50),
-                       CNDD.m = 1.0,
-                       CNDD.cv = 0.0)
+                       disp.m   = c(10,50)
+                       )
 ```
 
 And we simulate less individuals (trees) because otherwise it is hard to see anything in the plots.
 
-```{r}
-sim1 <- confetti.run(pars = parsets3[1,], nTrees = 500, Xext = 250, Yext = 250, nRep = 1, avg = F)
-sim2 <- confetti.run(pars = parsets3[2,], nTrees = 500, Xext = 250, Yext = 250, nRep = 1, avg = F)
+```{r, results='hide'}
+sim1 <- confetti.run(pars = parsets3[1,], nTrees = 500, Xext = 250, Yext = 250, nRep = 1, avg = F, meta.SAD = 1)
+sim2 <- confetti.run(pars = parsets3[2,], nTrees = 500, Xext = 250, Yext = 250, nRep = 1, avg = F,  meta.SAD = 1)
 ```
 
 ```{r}

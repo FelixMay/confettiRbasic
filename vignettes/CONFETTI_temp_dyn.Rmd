@@ -33,9 +33,8 @@ pars1 <- c(metaSR = 100,
            m      = 0.0,
            rmax   = 10,
            aRec   = 0.005,
-           disp   = 50,
-           CNDD.m = 1.0,
-           CNDD.cv = 0.0)
+           disp.m  = 50,
+           disp.cv = 0)
 
 sim1 <- confetti.run(pars = pars1, nGen = 1000, nSteps.out = 50, nRep = 1)
 ```
@@ -55,7 +54,7 @@ As output we get vectors for single value summary statistics, e.g. species richn
 First we plot species richness over time
 
 ```{r, fig.width = 5, fig.height = 5}
-plot(sim1$summary.stats$nSpecies ~ sim1$generations,type="l",
+plot(sim1$nSpecies ~ sim1$generations,type="l",
      xlab = "Time [in generations]",
      ylab = "No. of species", las = 1)
 ```
@@ -78,8 +77,8 @@ Plotting the spatial summary statistics involves some tweaking of the data to fi
 
 ```{r, fig.width = 6, fig.height = 5}
 n.timesteps <- length(sim1$generations)
-SAR.dat <- data.frame(nSpec = as.numeric(sim1$summary.stats$SAR),
-                      Area_ha = rep(sim1$summary.stats$Area / 1e4, each = n.timesteps),
+SAR.dat <- data.frame(nSpec = as.numeric(sim1$SAR),
+                      Area_ha = rep(sim1$Area_m2 / 1e4, each = n.timesteps),
                       Time = sim1$generations) 
 
 ggplot(data = SAR.dat,aes(x = Area_ha, y = nSpec, group = Time, col = Time)) +
@@ -94,8 +93,8 @@ The interesting point here is that species richness first declines at intermedia
 Once the principle is clear this can be easily done for the F(r) function, which estimates the probability of conspecific neighbours.
 
 ```{r, fig.width = 6, fig.height = 5}
-Fr.dat <- data.frame(Fr = as.numeric(sim1$summary.stats$Fr),
-                     radius = rep(sim1$summary.stats$radius, each = n.timesteps),
+Fr.dat <- data.frame(Fr = as.numeric(sim1$Fr),
+                     radius = rep(sim1$radius, each = n.timesteps),
                      Time = sim1$generations) 
 
 ggplot(data = Fr.dat,aes(x = radius, y = Fr, group = Time, col = Time)) +
@@ -126,7 +125,8 @@ pars2 <- c(metaSR = 200,
            m      = 0.01,
            rmax   = 10,
            aRec   = 0.005,
-           disp   = 50,
+           disp.m   = 50,
+           disp.cv = 0,
            CNDD.m = 10.0,
            CNDD.cv = 0.5)
 
@@ -137,15 +137,15 @@ We plot the species richness, Shannon and Simpson diversity over time.
 
 ```{r, fig.width = 8, fig.height = 3}
 par(mfrow=c(1,3), cex.lab = 1.5)
-plot(sim2$summary.stats$nSpecies ~ sim2$generations, type="l",
+plot(sim2$nSpecies ~ sim2$generations, type="l",
      xlab = "Time [in generations]",
      ylab = "No. of species", las = 1)
 
-plot(sim2$summary.stats$Shannon ~ sim2$generations,type="l",
+plot(sim2$Shannon ~ sim2$generations,type="l",
      xlab = "Time [in generations]",
      ylab = "Shannon diversity", las = 1)
 
-plot(sim2$summary.stats$Simpson ~ sim2$generations,type="l",
+plot(sim2$Simpson ~ sim2$generations,type="l",
      xlab = "Time [in generations]",
      ylab = "Simpson diversity", las = 1)
 ```

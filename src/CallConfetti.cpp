@@ -51,7 +51,8 @@ List EvalConfetti(NumericVector pars,
                             pars[18],
                             pars[19],
                             pars[20],
-                            pars[21]
+                            pars[21],
+                            pars[22]
                             );
 
 	int seed = as<int>(runif(1,0,999999));

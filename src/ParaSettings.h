@@ -91,6 +91,7 @@ public:
 	int    trade2_CNDD_abund;  //trade-off between CNDD and abundance in the metacommunity
 	double a_CNDD_abund;       //parameters for linear relationship between log(abundance) and CNDD
 	double b_CNDD_abund;
+	double c_CNDD_abund;
 	int    trade3_disp_pRec;   //trade-off between dispersal distance and pRec;
 	double a_disp_pRec;
 	double b_disp_pRec;
@@ -115,6 +116,7 @@ public:
          int    trade_CNDD_abund1,
          double a_CNDD_abund1,
          double b_CNDD_abund1,
+         double c_CNDD_abund1,
          int trade_disp_pRec1,
          double a_disp_pRec1,
          double b_disp_pRec1,

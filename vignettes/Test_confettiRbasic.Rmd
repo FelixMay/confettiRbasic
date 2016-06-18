@@ -14,48 +14,33 @@ library(confettiRbasic)
 ```
 
 ```{r}
-pars <- c(metaSR = 500,
-          metaCV = 1.0,
-          m      = 0.0,
-          rmax   = 10,
-          aRec   = 0.005,
-          disp.m = 20,
-          disp.cv = 0.0,
-          CNDD.m =  1.0,
-          CNDD.cv = 0.0,
-          pRec.m  = 0.5,
-          pRec.cv = 0.2,
-          trade1_CNDD_pRec = 0,
-          a_CNDD_pRec = 1.0,
-          b_CNDD_pRec = 1.0,
-          c_CNDD_pRec = 1.0,
-          trade2_CNDD_abund = 0,
-          a_CNDD_abund = 1,
-	       b_CNDD_abund = -1,
-          trade2_disp_pRec = 2,
-          a_disp_pRec = 1.0,
-          b_disp_pRec = 10.0,
-          c_disp_pRec = -2.0
+pars <- c(pRec.m = 0.5,
+          pRec.cv = 0.5,
+          trade1.CNDD.pRec = 1,
+          a.CNDD.pRec= 10,
+          b.CNDD.pRec = -1.0,
+          c.CNDD.pRec = 0.0
           )
-test1 <- EvalConfetti(pars, ngen = 1, nsteps_out = 1, metaSAD = 1)
+test1 <- confetti.run(pars, nGen = 1, meta.SAD = 1)
 
-head(test1$Species)
+head(test1$species)
+summary(test1$species)
 par(mfrow=c(2,2))
-plot(CNDD ~ metaRelAbund, data = test1$Species, log="")
-plot(CNDD ~ pRec, data = test1$Species, log="")
-plot(meanDisp ~ pRec, data = test1$Species, log="")
+plot(CNDD ~ metaRelAbund, data = test1$species, log="")
+plot(CNDD ~ pRec, data = test1$species, log="")
+plot(meanDisp ~ pRec, data = test1$species, log="")
 
 
-summary(test1$Species$CNDD)
-plot(test1$Species$pRec ~ as.numeric(test1$Abundance), log="x")
-plot(test1$Species$CNDD ~ as.numeric(test1$Abundance), log="x")
-          
-hist(log10(test1$Abundance))
-str(test1)
-plot(test1$Species$CNDD ~ as.numeric(test1$Abundance), log="x")
-summary(test1$Species$CNDD)
-
-col.vec <- rainbow(nrow(test1$Species))
-matplot(y = test1$Abundance, col = col.vec, type = "l", lty = 1)
+# summary(test1$Species$CNDD)
+# plot(test1$Species$pRec ~ as.numeric(test1$Abundance), log="x")
+# plot(test1$Species$CNDD ~ as.numeric(test1$Abundance), log="x")
+#           
+# hist(log10(test1$Abundance))
+# str(test1)
+# plot(test1$Species$CNDD ~ as.numeric(test1$Abundance), log="x")
+# summary(test1$Species$CNDD)
+# 
+# col.vec <- rainbow(nrow(test1$Species))
+# matplot(y = test1$Abundance, col = col.vec, type = "l", lty = 1)
 
 ```

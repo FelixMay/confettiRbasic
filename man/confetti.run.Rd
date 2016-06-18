@@ -4,13 +4,17 @@
 \alias{confetti.run}
 \title{Run the CONFETTI model}
 \usage{
-confetti.run(pars = c(metaSR = 300, metaCV = 1, m = 0.1, rmax = 10, aRec =
-  0.005, disp = 30, CNDD.m = 1, CNDD.cv = 0), nRep = 1, nGen = 100,
-  nSteps.out = 1, nTrees = 10000, Xext = 500, Yext = 500,
-  dist.max = 100, avg = FALSE)
+confetti.run(pars = c(metaSR = 100, metaCV = 1, m = 0.1, rmax = 10, aRec =
+  0.005, disp.m = 30, disp.cv = 0, CNDD.m = 1, CNDD.cv = 0, pRec.m = 1, pRec.cv
+  = 0, trade1.CNDD.pRec = 0, a.CNDD.pRec = 0, b.CNDD.pRec = 0, c.CNDD.pRec = 0,
+  trade2.CNDD.abund = 0, a.CNDD.abund = 0, b.CNDD.abund = 0, c.CNDD.abund = 0,
+  trade3.disp.pRec = 0, a.disp.pRec = 0, b.disp.pRec = 0, c.disp.pRec = 0),
+  nRep = 1, nGen = 100, nSteps.out = 1, nTrees = 10000, Xext = 500,
+  Yext = 500, dist.max = 100, bin.width = 1, meta.SAD = 0,
+  avg = FALSE)
 }
 \arguments{
-\item{pars}{A vector of eight numbers that include the model parameters for CONFETTI. The vector can be named but need not. Note that the order of parameters matters.
+\item{pars}{A vector of 22 numbers that include the model parameters for CONFETTI. The vector can be named but need not. Note that the order of parameters matters.
 
 \enumerate{
    \item \bold{metaSR} - Species richness of the metacommunity
@@ -18,9 +22,38 @@ confetti.run(pars = c(metaSR = 300, metaCV = 1, m = 0.1, rmax = 10, aRec =
 \item \bold{m} - Immigration rate (Interval [0,1])
 \item \bold{rmax} - Radius of interactions neighborhood (Interval [0,20])
 \item \bold{aRec} - Parameter for recruitment competition (Interval [0,0.1])
-\item \bold{disp} - Mean dispersal distance
+\item \bold{disp.m} - Mean dispersal distance of species
+\item \bold{disp.cv} - Coefficient of variation (sd/mean) of dispersal distance among species
 \item \bold{CNDD.m} - Mean conspecific negative density dependence (CNDD)
 \item \bold{CNDD.cv} - Coefficient of variation (sd/mean) of CNDD among species
+\item \bold{pRec.m} - mean recruitment probability without competition in interval [0.001; 1]
+\item \bold{pRec.cv} - Coefficient of variation (sd/mean) of recruitment probability among species
+\item \bold{trade1.CNDD.pRec} - mode for trade-off between CNDD and recruitment probability:
+\itemize {
+   \item 0: no trade-off
+   \item 1: linear trade-off with \eqn{CNDD = a + b * pRec}
+   \item 2: exponential trade-off with \eqn{CNDD = a + b * exp(c * pRec)}
+}
+\item \bold{a.CNDD.pRec} - parameter for CNDD-recruitment trade-off
+\item \bold{b.CNDD.pRec} - parameter for CNDD-recruitment trade-off
+\item \bold{c.CNDD.pRec} - parameter for CNDD-recruitment trade-off
+\item \bold{trade2.CNDD.abund} - mode for trade-off between CNDD and metacomminuty relative abundance:
+\itemize {
+   \item 0: no trade-off
+   \item 1: linear trade-off with \eqn{CNDD = a + b * rel.abund}
+   \item 2: logarithmic trade-off with \eqn{CNDD = a + b * log(rel.abund)}
+}
+\item \bold{a.CNDD.abund} - parameter for CNDD-metacommunity abundance trade-off
+\item \bold{b.CNDD.abund} - parameter for CNDD-metacommunity abundance trade-off
+\item \bold{trade3.disp.pRec} - mode for trade-off between dispersal and recruitment probability:
+#' \itemize {
+   \item 0: no trade-off
+   \item 1: linear trade-off with \eqn{disp = a + b * pRec}
+   \item 2: exponential trade-off with \eqn{disp = a + b * exp(c * pRec)}
+}
+\item \bold{a.disp.pRec} - parameter for dispersal-recruitment trade-off
+\item \bold{b.disp.pRec} - parameter for dispersal-recruitment trade-off
+\item \bold{c.disp.pRec} - parameter for dispersal-recruitment trade-off
 }}
 
 \item{nRep}{Number of replicate runs with the same parameter set}
@@ -35,9 +68,13 @@ confetti.run(pars = c(metaSR = 300, metaCV = 1, m = 0.1, rmax = 10, aRec =
 
 \item{Yext}{Size of the local community in y-direction}
 
-\item{dist.max}{Maximum distance (in meters) over which the spatial patterns F(r) and PCF(r) are calculated. The step size is always 1 meter}
+\item{dist.max}{Maximum distance (in meters) over which the spatial patterns F(r) and PCF(r) are calculated.}
 
-\item{avg}{logical variable: Should the non-temporal model output be averaged over the replicate runs? This works only if nSteos.out == 1.}
+\item{bin.width}{The distance bin-width used for the calculation of the spatial patterns F(r) and PCF(r),}
+
+\item{meta.SAD}{The abundance distribution of the metacommunity: (0) uniform distribution, (1) log-normal distribution with coefficient of variation metaCV.}
+
+\item{avg}{logical variable: Should the non-temporal model output be averaged over the replicate runs? This works only if nSteps.out == 1.}
 }
 \value{
 The model simulates virtual tree censuses with coordinates and species identities for each tree. The census data of the last simulated time step is only provided as output when nRep = 1 and avg = F. In this case the output is a list with four elements:
@@ -45,7 +82,7 @@ The model simulates virtual tree censuses with coordinates and species identitie
    \item \bold{census} - a dataframe with x,y coordinates and species ID for every tree in the simulated community
    \item \bold{abundance} - a vector with the number of individuals for every species
    \item \bold{species} - a dataframe with species properties: (1) the species ID, (2) the relative abundance in the metacommunity, (3) the mean dispersal distance, (4) the species-specifc conspecific negative density dependence (CNDD)
-   \item \bold{summary.stats} - a list with eigth elements that includes non-spatial and spatial summary statistics of the simulated community. When nSteps.out == 1 the summary statistics are provided as scalars and vectors and when nStpes.out > 1 as vectors and matrices. The list elements are:
+   \item \bold{summary.stats} - a list with eight elements that includes non-spatial and spatial summary statistics of the simulated community. When nSteps.out == 1 the summary statistics are provided as scalars and vectors and when nStpes.out > 1 as vectors and matrices. The list elements are:
 \enumerate{
    \item \bold{nSpecies} - Number of species
    \item \bold{Shannon} - Shannon diversity index \eqn{H = - \sum log(pi) * pi}
@@ -62,12 +99,18 @@ When nRep > 1 or avg = T only the list with the summary statistics is returned.
 \description{
 Run the CONFETTI model
 }
+\details{
+There are some constraints on parameter values that override the parameter settings. Species traits, i.e. recruitment probability, dispersal distance, and CNDD are simulated from probability distributions. To avoid biologically unrealistiv values a few constraints are implemented: Recruitment probability is restricted to the interval [0.001; 1]; For dispersal distance there is a lower bound of 0.1 m, and for CNDD the lower bound is 1, which means intraspecific competition equals interspedific competition. This lower bound excludes conspecific positive density dependence.
+
+There can be only one trade-off that involves CNDD. If the parameter settings imply a trade-off between CNDD and recruitment as well as between CNDD and metacommunity abundance, the second one is ignored and just the trade-off with recruitment probability is simulated.
+}
 \examples{
 #Run CONFETTI with standard parameters
 confetti.run()
 
 # Define your own parameter vector
-parvec <- c(500, 2.0, 0.01, 20, 0.005, 55, 2.0, 0.2)
+parvec <- c(500, 2.0, 0.01, 20, 0.005, 55, 0.2, 2.0, 0.2, 1.0, 0.0,
+            0, 1.0, 0.0, 0.0, 0, 1.0, 0.0, 0, 1.0, 0.0, 0.0)
 out1 <- confetti.run(pars = parvec)
 
 # plot model output

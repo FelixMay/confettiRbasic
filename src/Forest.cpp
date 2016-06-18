@@ -291,7 +291,7 @@ void CForest::initSpecies()
 	   SpecAbund[ispec] = 0;
 
 		//1. Recruitment probability
-		pRec_spec = RandGen2->Normal(pPars->pRec_mean,pPars->pRec_sd);
+		pRec_spec = RandGen2->Normal(pPars->pRec_mean, pPars->pRec_sd);
 		if (pRec_spec < 0.001)
 		   pRec_spec = 0.001;
 		if (pRec_spec > 1.0)
@@ -301,6 +301,7 @@ void CForest::initSpecies()
 
 		//trade-off with recruitment rate
 		switch (pPars->trade1_CNDD_pRec) {
+
    		case 0: //CNDD - normal distribution
    		   CNDD_spec = RandGen2->Normal(pPars->CNDD_mean,pPars->CNDD_sd);
    		   break;
@@ -308,8 +309,11 @@ void CForest::initSpecies()
    		   CNDD_spec = pPars->a_CNDD_pRec + pPars->b_CNDD_pRec * pRec_spec;
    		   break;
    		case 2:
-   		   CNDD_spec = pPars->a_CNDD_pRec + pPars->b_CNDD_pRec * exp(pPars->c_CNDD_pRec * pRec_spec);
+   		   CNDD_spec = pPars->a_CNDD_pRec + pPars->b_CNDD_pRec * log(pRec_spec);
    		   break;
+		   case 3:
+		      CNDD_spec = pPars->a_CNDD_pRec + pPars->b_CNDD_pRec * exp(pPars->c_CNDD_pRec * pRec_spec);
+		      break;
    		default:
    		   CNDD_spec = RandGen2->Normal(pPars->CNDD_mean,pPars->CNDD_sd);
 		}
@@ -320,11 +324,14 @@ void CForest::initSpecies()
 		//trade-off with metacommunity abundance
 		switch (pPars->trade2_CNDD_abund) {
    		case 1:
-   		   CNDD_spec = pPars->a_CNDD_abund + pPars->b_CNDD_abund * log(meta_relabund);
-   		   break;
-   		case 2:
             CNDD_spec = pPars->a_CNDD_abund + pPars->b_CNDD_abund * meta_relabund;
    		   break;
+		   case 2:
+		      CNDD_spec = pPars->a_CNDD_abund + pPars->b_CNDD_abund * log(meta_relabund);
+		      break;
+		   case 3:
+		      CNDD_spec = pPars->a_CNDD_abund + pPars->b_CNDD_abund * exp(pPars->c_CNDD_abund * meta_relabund);
+		      break;
 		   default:
 		      ;
 		}
@@ -343,12 +350,18 @@ void CForest::initSpecies()
 		case 1: //linear relationship with pRec
 		   disp_spec = pPars->a_disp_pRec + pPars->b_disp_pRec * pRec_spec;
 		   break;
-		case 2:
+		case 2: //log-linear relationship with pRec
+		   disp_spec = pPars->a_disp_pRec + pPars->b_disp_pRec * log(pRec_spec);
+		   break;
+		case 3:
 		   disp_spec = pPars->a_disp_pRec + pPars->b_disp_pRec * exp(pPars->c_disp_pRec * pRec_spec);
 		   break;
 		default:
 		   disp_spec = exp(RandGen2->Normal(disp_mu, disp_sigma));
 		}
+
+		if (disp_spec < 0.1)
+		   disp_spec = 0.1;
 
 		SpecPars[ispec] = CSpecPara(disp_spec, pRec_spec);
 	}
@@ -461,7 +474,8 @@ double CForest::GetProbRecruit(double x1, double y1, unsigned int spec_id)
       } // end dy
 
       //Standardize NCI by neighborhood area
-      densNCI = NCI/(pPars->r_max * pPars->r_max * Pi);
+      if (pPars->r_max > 0.0)
+         densNCI = NCI/(pPars->r_max * pPars->r_max * Pi);
 	} //if rmax < 99
 
 	// double prob_rec1{0.0};
