@@ -10,6 +10,10 @@ vignette: >
 ---
 
 ```{r}
+library(devtools)
+install_github("FelixMay/confettiRbasic", keep_source = T)
+
+
 library(confettiRbasic)
 ```
 
@@ -29,18 +33,4 @@ par(mfrow=c(2,2))
 plot(CNDD ~ metaRelAbund, data = test1$species, log="")
 plot(CNDD ~ pRec, data = test1$species, log="")
 plot(meanDisp ~ pRec, data = test1$species, log="")
-
-
-# summary(test1$Species$CNDD)
-# plot(test1$Species$pRec ~ as.numeric(test1$Abundance), log="x")
-# plot(test1$Species$CNDD ~ as.numeric(test1$Abundance), log="x")
-#           
-# hist(log10(test1$Abundance))
-# str(test1)
-# plot(test1$Species$CNDD ~ as.numeric(test1$Abundance), log="x")
-# summary(test1$Species$CNDD)
-# 
-# col.vec <- rainbow(nrow(test1$Species))
-# matplot(y = test1$Abundance, col = col.vec, type = "l", lty = 1)
-
 ```

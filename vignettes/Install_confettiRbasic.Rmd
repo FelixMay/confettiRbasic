@@ -1,0 +1,87 @@
+---
+title: "Download and install CONFETTI from GitHub"
+author: "Felix May"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    number_sections: yes
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Downloading the source code from GitHub
+
+Just go to the website:
+
+[https://github.com/FelixMay/confettiRbasic](https://github.com/FelixMay/confettiRbasic)
+
+Use the button **"Clone or download"** do download the package source code as zip-file.
+
+# Installing the package
+
+## Installing the package directly from GitHub
+
+To install and build the package from source directly from GitHub you can use the `devtools` package. In advance you need to install the package `Rcpp` as well as a  an appropriate C++ compiler. Under Windows this means you need Rtools34from CRAN. If you have these tools than installing the package is very easy:
+
+```{r}
+library(Rcpp)
+library(devtools)
+install_github("FelixMay/confettiRbasic")
+
+
+library(confettiRbasic)
+```
+
+## Building the package from source in RStudio 
+
+Alternatively you can also build the package in RStudio. Open the file `confettiRbasic.proj` and then just click**Build and reload** in the **Build** menu. Of course you need the same tools then for the installation from GitHub.
+
+# Test of trade-off parameterizations
+
+Here is an example how to quickly test the parameterization of trade-offs in CONFETTI. For this purpose you hand over the necessary parameters and just run the model for one step to avoid long simulation times. The species are always initialized in the beginning of the simulation run.
+
+The example is for a linear trade-oiff between CNDD and recruitment probability. Of course this only makes sense if there is interspecific variation in recruitment probability, i.e. `pRec.cv > 0`.
+
+```{r}
+pars <- c(pRec.m = 0.5,
+          pRec.cv = 0.5,
+          trade1.CNDD.pRec = 1,
+          a.CNDD.pRec= 10,
+          b.CNDD.pRec = -20.0,
+          c.CNDD.pRec = 0.0
+          )
+sim1 <- confetti.run(pars, nGen = 1, meta.SAD = 1)
+```
+
+```{r, fig.width = 7, fig.height = 7}
+head(sim1$species)
+summary(sim1$species)
+par(mfrow=c(2,2))
+plot(CNDD ~ metaRelAbund, data = sim1$species)
+plot(CNDD ~ pRec, data = sim1$species, log="")
+plot(meanDisp ~ pRec, data = sim1$species, log="")
+```
+
+And here is another example for a logarithmis trade-off between CNDD and relative metacommunity abundance. In this case you have to use a log-normal SAD for the metacommunity, i.e. `meta.SAD = 1`. Otherwise all species have the same relative abundance in the metacommunity and then also the same CNDD.
+
+```{r}
+pars <- c(trade2.CNDD.abund = 2,
+          a.CNDD.abund= 1,
+          b.CNDD.abund = -2.5
+          )
+sim2 <- confetti.run(pars, nGen = 1, meta.SAD = 1)
+```
+
+```{r, fig.width = 7, fig.height = 7}
+head(sim2$species)
+summary(sim2$species)
+par(mfrow=c(2,2))
+plot(CNDD ~ metaRelAbund, data = sim2$species)
+plot(CNDD ~ metaRelAbund, data = sim2$species,log="x")
+
+plot(CNDD ~ pRec, data = sim2$species, log="")
+plot(meanDisp ~ pRec, data = sim2$species, log="")
+```
