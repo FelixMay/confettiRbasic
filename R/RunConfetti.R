@@ -45,7 +45,7 @@
 #' @param avg Logical variable: Should the non-temporal model output be averaged over the replicate runs? This works only if nSteps.out == 1.
 #'
 #' @return The model simulates virtual tree censuses with coordinates and species identities for each tree. Several summary statistics are calculated from the census data. The summary statistics are calculated for each of the nSteps.out time steps. The model returns a list with the following elements:
-#' \enumerate{
+#' \itemize{
 #'    \item \bold{census} - a dataframe with x,y coordinates and species ID for every tree in the simulated community. The census represents the last simulated time step and is only provided when nRep = 1 and avg = F.
 #'    \item \bold{abundance} - a vector (or matrix) with the number of individuals for every species. Only provided when nRep = 1 and avg = F.
 #'    \item \bold{species} - a dataframe with species properties: (1) the species ID, (2) the relative abundance in the metacommunity, (3) the mean dispersal distance, (4) the species-specifc conspecific negative density dependence (CNDD), (5) the species-specific recruitment probability without competition. Only provided when nRep = 1 and avg = F.
@@ -54,12 +54,13 @@
 #'    \item \bold{Shannon} - Shannon diversity index \eqn{H = - \sum log(pi) * pi}
 #'    \item \bold{Simpson} - Simpson diversity index \eqn{S = 1 - \sum 1/pi^2}, where pi is the relative abundance of species i. This essentially estimates the probability of randomly drawing two individuals from different species (probability of interspecific encounter)
 #'    \item \bold{SAD} - species abundance distribution with logarithmic abundance classes (1, 2-3, 4-7, 8-15, ..., >=2048 individuals)
-#'    \item \bold{Area} - sampling areas for species area relationship in m^2
+#'    \item \bold{Area} - sampling areas for species-area relationship (SAR) in m^2
 #'    \item \bold{SAR} - species-area relationship: average species numbers in quadrats of different sizes
+#'    \item \bold{radius} - neighbourhood radii for calculation of F(r) and PCF(r) functions
 #'    \item \bold{Fr} - Proportion of conspecific neighbors: This estimates the probability that two trees seperated by distance r belong to the same species.
 #'    \item \bold{PCF} - pair-correlation function. Measure of spatial aggregation of regularity across scales. A value of 1 indicates a random pattern, PCF > 1 indicates aggregation and PCF < 1 regularity (=repulsion of individuals)
 #' }
-#' }
+#'
 #' When nRep > 1 or avg = T only the list with the summary statistics is returned, but no output on trees or single species.
 #'
 #' @examples
