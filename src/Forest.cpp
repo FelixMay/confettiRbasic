@@ -303,7 +303,9 @@ void CForest::initSpecies()
 		switch (pPars->trade1_CNDD_pRec) {
 
    		case 0: //CNDD - normal distribution
-   		   CNDD_spec = RandGen2->Normal(pPars->CNDD_mean,pPars->CNDD_sd);
+   		   do {
+		         CNDD_spec = RandGen2->Normal(pPars->CNDD_mean,pPars->CNDD_sd);
+		      } while (CNDD_spec < 1);
    		   break;
    		case 1: //linear relationship with pRec
    		   CNDD_spec = pPars->a_CNDD_pRec + pPars->b_CNDD_pRec * pRec_spec;
