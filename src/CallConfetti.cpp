@@ -65,6 +65,14 @@ List EvalConfetti(NumericVector pars,
    pForest->initTrees();
 
    //prepare output data
+   int output_interval{0};
+   if (nsteps_out <= ngen)
+      output_interval = ngen/nsteps_out;
+   else {
+      output_interval = ngen;
+      nsteps_out = 1;
+   }
+
    int nout{0};
    if (nsteps_out > 1) nout = nsteps_out + 1;
    else                nout = 1;
@@ -90,13 +98,11 @@ List EvalConfetti(NumericVector pars,
    for (int i=0; i < pForest->SARq_n; ++i)
       Area[i] = pForest->SARq_scales[i];
 
-   int output_interval = ngen/nsteps_out;
-
    int nspec{0};
    double shannon{0.0}, simpson{0.0};
 
    //save initial condition
-   if (nsteps_out > 1){
+   if (nsteps_out > 1 || ngen == 0){
 
       Time[0] = 0;
 

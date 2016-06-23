@@ -150,6 +150,12 @@ confetti.run <- function(pars = c(metaSR   = 100,
       return("Error: pars needs to be a named vector or of length 22")
    }
 
+   if (!is.null(names(pars))){
+      unknown.names <- pars[!names(pars) %in% names(my.pars)]
+      if (length(unknown.names) >= 1)
+         return(paste("Error:",names(unknown.names),"is no valid model parameter"))
+   }
+
    if (is.data.frame(pars)){
       pars.val <- as.numeric(pars)
       names(pars.val) <- names(pars)
@@ -166,12 +172,18 @@ confetti.run <- function(pars = c(metaSR   = 100,
       my.pars["trade2.CNDD.abund"] <- 0
    }
 
-   if (nRep > 1 & nSteps.out > 1){
+   if (nSteps.out == 0)
+      nSteps.out <- 1
+
+   #if(nGen <= 0)
+   #   nGen <- 1
+
+   if (nRep > 1 && nSteps.out > 1){
       cat("Warning: temporal output is ignored if nRep > 1.\nEither use nRep = 1 or nSteps.out = 1")
       nSteps.out <- 1
    }
 
-   if (nRep == 1 & avg == TRUE){
+   if (nRep == 1 && avg == TRUE){
       print("Warning: When nRep == 1, avg is set to FALSE")
       avg <- FALSE
    }
