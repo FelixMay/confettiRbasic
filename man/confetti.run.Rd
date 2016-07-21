@@ -4,13 +4,13 @@
 \alias{confetti.run}
 \title{Run the CONFETTI model}
 \usage{
-confetti.run(pars = c(metaSR = 100, metaCV = 1, m = 0.1, rmax = 10, aRec =
+confetti.run(pars = c(metaSR = 200, metaCV = 1, m = 0.01, rmax = 10, aRec =
   0.005, disp.m = 30, disp.cv = 0, CNDD.m = 1, CNDD.cv = 0, pRec.m = 1, pRec.cv
   = 0, trade1.CNDD.pRec = 0, a.CNDD.pRec = 0, b.CNDD.pRec = 0, c.CNDD.pRec = 0,
   trade2.CNDD.abund = 0, a.CNDD.abund = 0, b.CNDD.abund = 0, c.CNDD.abund = 0,
   trade3.disp.pRec = 0, a.disp.pRec = 0, b.disp.pRec = 0, c.disp.pRec = 0),
   nRep = 1, nGen = 100, nSteps.out = 1, nTrees = 10000, Xext = 500,
-  Yext = 500, dist.max = 100, bin.width = 1, meta.SAD = 1,
+  Yext = 500, dist.max = 100, bin.width = 1, meta.SAD = 0,
   avg = FALSE)
 }
 \arguments{

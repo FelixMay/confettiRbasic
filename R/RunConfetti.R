@@ -87,9 +87,9 @@
 #' @useDynLib confettiRbasic
 #' @importFrom Rcpp sourceCpp
 
-confetti.run <- function(pars = c(metaSR   = 100,
+confetti.run <- function(pars = c(metaSR   = 200,
                                   metaCV   = 1.0,
-                                  m        = 0.1,
+                                  m        = 0.01,
                                   rmax     = 10.0,
                                   aRec     = 0.005,
                                   disp.m   = 30.0,
@@ -118,7 +118,7 @@ confetti.run <- function(pars = c(metaSR   = 100,
                          Yext = 500,
                          dist.max = 100,
                          bin.width = 1,
-                         meta.SAD = 1,
+                         meta.SAD = 0,
                          avg = FALSE
                          )
 {
