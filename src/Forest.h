@@ -79,8 +79,8 @@ public:
 	//Output Variables
 	int64_t BD_total;
 
-	static const int MaxSAD = 12;
-	int SAD[MaxSAD];      //Species abundance distributions as octave curve 2^0 - 2^11
+   int MaxSAD;
+	int *SAD;      //Species abundance distributions as octave curve 2^0 - 2^11
 
 	//Private functions
 	inline int GetRandSpec(); //draw a species from the species pool

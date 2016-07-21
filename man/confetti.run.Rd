@@ -29,7 +29,7 @@ confetti.run(pars = c(metaSR = 100, metaCV = 1, m = 0.1, rmax = 10, aRec =
 \item \bold{pRec.m} - mean recruitment probability without competition in interval [0.001; 1]
 \item \bold{pRec.cv} - Coefficient of variation (sd/mean) of recruitment probability among species
 \item \bold{trade1.CNDD.pRec} - mode for trade-off between CNDD and recruitment probability. There are three different possible modes (parameterizations) for each of the three trade-offs:
-\itemize {
+\itemize{
    \item 0: no trade-off
    \item 1: linear: \eqn{y = a + b * x}
    \item 2: logarithmic: \eqn{y = a + b * log(x)}

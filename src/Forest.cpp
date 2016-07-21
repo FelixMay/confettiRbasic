@@ -52,6 +52,9 @@ CForest::CForest(int seed, CModelSettings* pset){
  	RandGen1 = new CRandomMersenne(seed);
  	RandGen2 = new StochasticLib1(seed);
 
+ 	MaxSAD = 12;
+ 	SAD = new int[MaxSAD];
+
 	// Point pattern variables all trees
  	nBins1 = ceil(pSettings->m_rmax / pSettings->m_bw1);
 
@@ -103,6 +106,8 @@ CForest::~CForest() {
 
 	delete RandGen1;
 	delete RandGen2;
+
+	delete[] SAD;
 
    delete[] rvec1;
 

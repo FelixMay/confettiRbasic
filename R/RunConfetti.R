@@ -15,7 +15,7 @@
 #' \item \bold{pRec.m} - mean recruitment probability without competition in interval [0.001; 1]
 #' \item \bold{pRec.cv} - Coefficient of variation (sd/mean) of recruitment probability among species
 #' \item \bold{trade1.CNDD.pRec} - mode for trade-off between CNDD and recruitment probability. There are three different possible modes (parameterizations) for each of the three trade-offs:
-#' \itemize {
+#' \itemize{
 #'    \item 0: no trade-off
 #'    \item 1: linear: \eqn{y = a + b * x}
 #'    \item 2: logarithmic: \eqn{y = a + b * log(x)}
@@ -32,7 +32,7 @@
 #' \item \bold{a.disp.pRec} - parameters for dispersal-recruitment trade-off
 #' \item \bold{b.disp.pRec}
 #' \item \bold{c.disp.pRec}
-#' }
+#'}
 #' @param nRep Number of replicate runs with the same parameter set
 #' @param nGen Number of generations simulated. This means the model is simulates nGen*nTrees birth-death events
 #' @param nSteps.out Number of time steps with model output. If nSteps.out == 1 there is only model output from the last simulated time step. If nSteps.out > 1 there is output over time. The output time interval is calculated as nGen/nSteps.out. The initial condition is included in the output. Temporal output works only on combination with avg = F.
