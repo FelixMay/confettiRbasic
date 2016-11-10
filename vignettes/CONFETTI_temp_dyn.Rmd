@@ -7,7 +7,7 @@ output:
     number_sections: yes
     toc: yes
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Temporal dynamics and species-specific output with CONFETTI}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -58,6 +58,7 @@ plot(sim1$nSpecies ~ sim1$generations,type="l",
      xlab = "Time [in generations]",
      ylab = "No. of species", las = 1)
 ```
+
 As we do neither have immigration nor conspecific negative density dependence species richness decays over time.
 
 ### Species abundances over time

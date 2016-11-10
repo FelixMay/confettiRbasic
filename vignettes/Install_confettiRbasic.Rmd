@@ -7,7 +7,7 @@ output:
     number_sections: yes
     toc: yes
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Download and install CONFETTI from GitHub}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -65,7 +65,7 @@ plot(CNDD ~ pRec, data = sim1$species, log="")
 plot(meanDisp ~ pRec, data = sim1$species, log="")
 ```
 
-And here is another example for a logarithmis trade-off between CNDD and relative metacommunity abundance. In this case you have to use a log-normal SAD for the metacommunity, i.e. `meta.SAD = 1`. Otherwise all species have the same relative abundance in the metacommunity and then also the same CNDD.
+And here is another example for a logarithmic trade-off between CNDD and relative metacommunity abundance. In this case you have to use a log-normal SAD for the metacommunity, i.e. `meta.SAD = 1`. Otherwise all species have the same relative abundance in the metacommunity and then also the same CNDD.
 
 ```{r}
 pars <- c(trade2.CNDD.abund = 2,

@@ -1,7 +1,7 @@
 Package: confettiRbasic
 Type: Package
 Title: Basic version of the spatial simulation model CONFETTI
-Version: 1.0.0
+Version: 0.0.9999
 Author: Felix May
 Maintainer: Felix May <felix.may@idiv.de>
 Description: CONFETTI is a spatially-explicit and dynamic model of plant
