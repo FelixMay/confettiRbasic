@@ -230,6 +230,7 @@ confetti.run <- function(pars = c(metaSR   = 200,
 
    if (nRep == 1){
       census <- out1[[1]]$Trees
+      census$SpecID <- factor(census$SpecID)
       abundance <- out1[[1]]$Abundance
       species <- out1[[1]]$Species
       generations <- out1[[1]]$Generations

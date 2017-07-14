@@ -10,7 +10,7 @@ LazyData: TRUE
 Imports:
     Rcpp (>= 0.12.4)
 LinkingTo: Rcpp
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr

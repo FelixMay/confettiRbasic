@@ -115,4 +115,3 @@ May, F.; Huth, A. & Wiegand, T. (2015) Moving beyond abundance distributions: ne
 
 May, F.; Wiegand, T.; Lehmann, S. & Huth, A. (2016) Do abundance distributions and species aggregation correctly predict macroecological biodiversity patterns in tropical forests? Global Ecology and Biogeography, 25, 575-585
 }
-

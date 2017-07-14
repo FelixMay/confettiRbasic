@@ -12,7 +12,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette shows how to run simulations with the CONFETTI model and how to plot the model output as function of the simulation parameters.
+This vignette shows how to run simulations with the CONFETTI model and
+how to plot the model output as function of the simulation parameters.
 
 # Load the necessary R packages
 
@@ -24,8 +25,11 @@ library(cowplot) # for nicer plots than with ggplot standard
 
 # Create CONFETTI plot from a run with standard parameters
 
-We conduct a single run with the model. Make sure the arguments `nRep = 1` and `avg = FALSE`. Only for these setting the detailed simulated census data with coordinates and species IDs is provided as model output. 
-The simulation is just 1 ha (100 m x 100 m) and 400 trees so that you can see the individual points.The census object contains x,y-coordinates and a species ID for every individual.
+We conduct a single run with the model. Make sure the arguments `nRep = 1` and
+`avg = FALSE`. Only for these setting the detailed simulated census data with
+coordinates and species IDs is provided as model output. The simulation is just
+1 ha (100 m x 100 m) and 400 trees so that you can see the individual points.
+The census object  contains x,y-coordinates and a species ID for every individual.
 
 ```{r}
 out1 <- confetti.run(nTrees = 400, Xext = 100, Yext = 100, nRep = 1, avg = F)
@@ -36,26 +40,31 @@ head(census1)
 Create a vector with colors for each species
 
 ```{r}
-col.vec <- rainbow(out1$nSpecies)
+col_vec <- rainbow(out1$nSpecies)
 ```
 
 Plot the position of all trees with colors marks that indicates the species identity
 
 ```{r, fig.width = 5, fig.height = 5}
-plot(Y ~ X, data = census1, col = col.vec[SpecID], pch = 19)
+plot(Y ~ X, data = census1, col = col_vec[SpecID], pch = 19)
 ```
 
 # Investigate the relationship between model parameters and (spatial) summary statistics
 
-Now we are not interested in the positions of single individuals anymore, but we would like to study how summary statistics, which describe biodiversity an its spatial distributions vary as a function of the model parameters.
+Now we are not interested in the positions of single individuals anymore, but
+we would like to study how summary statistics, which describe biodiversity and
+its spatial distributions vary as a function of the model parameters.
 
 ## Influence of metacommunity species richness
 
-We start with exploring the influence of the species richness of the metacommunity `metaSR`. Remember that the metacommunity is represented as an abundance distribution that follows a log-normal distribution. 
+We start with exploring the influence of the species richness of the
+metacommunity `metaSR`. Remember that the metacommunity is represented as an
+abundance distribution that follows a log-normal distribution. 
 
 ### Simulations
 
-First we create a dataframe with parameter sets. This can be done efficiently using the `expand.grid()` function
+First we create a dataframe with parameter sets. This can be done efficiently
+using the `expand.grid()` function
 
 ```{r}
 parsets <- expand.grid(metaSR = c(50,100,200,500,1000) ,
@@ -63,7 +72,10 @@ parsets <- expand.grid(metaSR = c(50,100,200,500,1000) ,
                        )
 parsets
 ```
-Now we call the CONFETTI model for each line in the parameter dataframe. For each parameter set 5 replicate runs are simulated by `nRep = 5` and the summary statistics are automatically averaged over the replicates by `avg = T`. The simluted community is 250 m x 250 m and contains 2500 trees.
+Now we call the CONFETTI model for each line in the parameter dataframe. For each
+parameter set 5 replicate runs are simulated by `nRep = 5` and the summary statistics
+are automatically averaged over the replicates by `avg = T`. The simluted community
+is 250 m x 250 m and contains 2500 trees.
 
 ```{r, results='hide'}
 sim1 <- confetti.run(pars = parsets[1,,drop=F], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = T)
@@ -73,7 +85,8 @@ sim4 <- confetti.run(pars = parsets[4,,drop=F], nTrees = 2500, Xext = 250, Yext 
 sim5 <- confetti.run(pars = parsets[5,,drop=F], nTrees = 2500, Xext = 250, Yext = 250, nRep = 5, avg = F)
 ```
 
-The same simulation set can be done more efficiently using the `apply` function on the rows of the parameter dataframe
+The same simulation set can be done more efficiently using the `apply` function
+on the rows of the parameter dataframe
 
 ```{r, results='hide'}
 sim.list <- apply(parsets, MARGIN = 1, FUN = confetti.run, nTrees = 2500, Xext = 250, Yext = 250, 
@@ -82,7 +95,11 @@ sim.list <- apply(parsets, MARGIN = 1, FUN = confetti.run, nTrees = 2500, Xext =
 
 ### Scalar diversity indices
 
-In the next step we want to plot different summary statistics as function of the parameter values. For the scalar (single value) summary statistics we can simply add the values to our parameter dataframe. The `sim.list` is a list. The syntax how to extract certain values from a list is a little ackward, but efficient. Check out the help of `sapply()` to understand what is going on.
+In the next step we want to plot different summary statistics as function of 
+the parameter values. For the scalar (single value) summary statistics we can 
+simply add the values to our parameter dataframe. The `sim.list` is a list.
+The syntax how to extract certain values from a list is a little ackward, but 
+efficient. Check out the help of `sapply()` to understand what is going on.
 
 ```{r}
 dat1 <- parsets
@@ -91,7 +108,10 @@ dat1$Shannon <- sapply(sim.list,"[[","Shannon")
 dat1$Simpson <- sapply(sim.list,"[[","Simpson")
 ```
 
-We plot the disversity indices - species richness, Shannon diversity, Simpson diversity - as function of the species richness of the metacommunity. See the help of `confetti.run()` or ecological textbooks (or internet) to learn about the definitions of diversity indices if you do not know them. 
+We plot the disversity indices - species richness, Shannon diversity, Simpson
+diversity - as function of the species richness of the metacommunity. See the
+help of `confetti.run()` or ecological textbooks (or internet) to learn about
+the definitions of diversity indices if you do not know them. 
 
 ```{r, fig.width = 8, fig.height = 3}
 par(mfrow = c(1,3), las = 1, cex.lab = 1.5)
@@ -102,7 +122,10 @@ plot(Simpson ~ metaSR, data = dat1, type = "b")
 
 ### Species abundance distribution (SAD)
 
-As expected the local diversity of the simulated communities increase with the regional diversity in the metacommunity. But how does this look like when we consider the complete abundance distribution? We can extract the abundance distribution for a single run with:
+As expected the local diversity of the simulated communities increase with the
+regional diversity in the metacommunity. But how does this look like when we 
+consider the complete abundance distribution? We can extract the abundance 
+distribution for a single run with:
 
 ```{r}
 sim.list[[1]]$SAD
@@ -198,6 +221,7 @@ Fr.dat$disp.fac <- factor(Fr.dat$disp)
 ggplot(data = Fr.dat, aes(x = r, y = Fr, color = disp.fac)) +
    geom_line()
 ```
+
 We see that with lower dispersal distances there are more conspecifics at shorter distances, which makes perfect sense. This means we have higher clumping (= aggregation) of conspecific individuals. With higher dispersal distances F(r) quickly decays with increasing distance. Therefore this pattern is also well known in community ecology and macro-ecology as "distance decay of community similarity".
 
 Finally we check out the species-area relationship (SAR). Luckily the different sampling areas for which the species richness is calculated is also provided as model output by CONFETTI in thje variable `Area`. When we compile the output dataframe we also convert the Area from m^2 to ha.
